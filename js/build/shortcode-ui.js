@@ -106,7 +106,18 @@ var MediaController = wp.media.controller.State.extend({
 		menuItem.render();
 
 		this.frame.setState( 'insert' );
-		this.frame.uploader.uploader.uploader.init();
+
+		// Full initialization (using `this.frame.uploader.uploader.uploader.init()`) does more than needed here and is
+		// causing an image duplication/multiplication bug.
+		// The below hack was the easiest way to trigger a reinitialization without causing any side-effects - setting
+		// the "runtimes" option (with its previous value, so not a real update) will cause Plupload to reinitialize
+		// itself:
+		// https://github.com/moxiecode/plupload/blob/03f69116d55c9bde5a16292c0c84e63fb3d779cc/js/plupload.dev.js#L1381
+		this.frame.uploader.uploader.uploader.setOption(
+			'runtimes',
+			this.frame.uploader.uploader.uploader.getOption('runtimes'),
+			false
+		);
 	},
 
 	setActionSelect: function() {
